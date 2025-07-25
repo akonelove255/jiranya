@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ระบบส่งของ JIRANYA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body { background: #eefcf4; font-family: 'Prompt', sans-serif; }
+    .form-section { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 8px rgba(0,0,0,0.1); }
+    label { font-weight: 500; }
+    .form-label-icon { display: flex; align-items: center; font-weight: bold; margin-bottom: 6px; }
+    .form-label-icon i { margin-right: 6px; }
+    .submit-btn { width: 100%; font-size: 18px; padding: 10px; }
+    .action-btns button { margin: 0 4px; }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h4><i class="fas fa-box-open"></i> ระบบส่งของ JIRANYA 2526</h4>
+    <div class="form-section mt-3">
+      <form id="deliveryForm">
+        <input type="hidden" id="rowIndex" />
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-calendar-alt"></i> วันที่</label>
+            <input type="date" class="form-control" id="date" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-user"></i> ลูกค้า</label>
+            <input type="text" class="form-control" id="customer" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-box"></i> สินค้า</label>
+            <input type="text" class="form-control" id="product" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-sort-numeric-up"></i> จำนวน</label>
+            <input type="number" class="form-control" id="quantity" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-coins"></i> ราคาต่อหน่วย</label>
+            <input type="number" class="form-control" id="price" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-car"></i> ทะเบียนรถ</label>
+            <input type="text" class="form-control" id="plate" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-truck"></i> สถานะจัดส่ง</label>
+            <input type="text" class="form-control" id="statusDeliver" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label-icon"><i class="fas fa-credit-card"></i> สถานะชำระ</label>
+            <select class="form-select" id="statusPaid">
+              <option value="">เลือกสถานะ</option>
+              <option value="ยังไม่ชำระ">ยังไม่ชำระ</option>
+              <option value="ชำระแล้ว">ชำระแล้ว</option>
+            </select>
+          </div>
+        </div>
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-success submit-btn">
+            <i class="fas fa-clipboard-check"></i> ตรวจสอบข้อมูล
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-5">
+      <h5><i class="fas fa-table"></i> รายการทั้งหมด</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered text-center" id="dataTable">
+          <thead class="table-success">
+            <tr>
+              <th>#</th>
+              <th>วันที่</th>
+              <th>ลูกค้า</th>
+              <th>สินค้า</th>
+              <th>จำนวน</th>
+              <th>ราคา</th>
+              <th>ทะเบียน</th>
+              <th>จัดส่ง</th>
+              <th>ชำระ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const URL = "https://script.google.com/macros/s/AKfycbxemuDRDDg7jmRBs1rm_tE7zmi_RdX-cVxDuY_vSm-zV7P-rSbCKInECrhmcjNaCV7PSA/exec";
+
+    function loadData() {
+      fetch(URL)
+        .then(res => res.json())
+        .then(data => {
+          const tableBody = document.getElementById("tableBody");
+          tableBody.innerHTML = "";
+          data.forEach((item, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${item.date}</td>
+              <td>${item.customer}</td>
+              <td>${item.product}</td>
+              <td>${item.quantity}</td>
+              <td>${item.price}</td>
+              <td>${item.plate}</td>
+              <td>${item.statusDeliver}</td>
+              <td>${item.statusPaid}</td>
+              <td class="action-btns">
+                <button class="btn btn-warning btn-sm" onclick='editRow(${JSON.stringify(item)})'>Edit</button>
+                <button class="btn btn-danger btn-sm" onclick='deleteRow(${item.rowIndex})'>Del</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+        });
+    }
+
+    function editRow(item) {
+      document.getElementById("rowIndex").value = item.rowIndex;
+      document.getElementById("date").value = item.date;
+      document.getElementById("customer").value = item.customer;
+      document.getElementById("product").value = item.product;
+      document.getElementById("quantity").value = item.quantity;
+      document.getElementById("price").value = item.price;
+      document.getElementById("plate").value = item.plate;
+      document.getElementById("statusDeliver").value = item.statusDeliver;
+      document.getElementById("statusPaid").value = item.statusPaid;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteRow(rowIndex) {
+      if (!confirm("คุณแน่ใจว่าต้องการลบรายการนี้?")) return;
+      fetch(URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "delete", rowIndex })
+      }).then(() => loadData());
+    }
+
+    document.getElementById("deliveryForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const rowIndex = document.getElementById("rowIndex").value;
+      const data = {
+        action: rowIndex ? "edit" : "add",
+        rowIndex: rowIndex,
+        date: document.getElementById("date").value,
+        customer: document.getElementById("customer").value,
+        product: document.getElementById("product").value,
+        quantity: document.getElementById("quantity").value,
+        price: document.getElementById("price").value,
+        plate: document.getElementById("plate").value,
+        statusDeliver: document.getElementById("statusDeliver").value,
+        statusPaid: document.getElementById("statusPaid").value
+      };
+      fetch(URL, {
+        method: "POST",
+        body: JSON.stringify(data)
+      }).then(() => {
+        this.reset();
+        document.getElementById("rowIndex").value = "";
+        loadData();
+      });
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
